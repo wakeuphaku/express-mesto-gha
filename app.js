@@ -1,18 +1,43 @@
 const express = require('express');
+
+const { PORT = 3000 } = process.env;
+
 const mongoose = require('mongoose');
+const UserModel = require('./models/user');
 
 mongoose.connect('mongodb://localhost:27017/mestodb', {
   useNewUrlParser: true,
-}).then(() => {
-  console.log('MongoDB connected');
 });
-
-// Слушаем 3000 порт
-const { PORT = 3000 } = process.env;
 
 const app = express();
 
+app.use(express.json());
+app.use((req, res, next) => {
+  req.user = {
+    _id: '6530502687139f338dd36dc3', // вставьте сюда _id созданного в предыдущем пункте пользователя
+  };
+
+  next();
+});
+
+app.get('/', (req, res) => {
+  res.send('BackEnd');
+});
+
+app.post('/users', (req, res) => {
+  const userData = req.body;
+  console.log(req.body);
+
+  return UserModel.create(userData)
+    .then((data) => res.status(201).send(data))
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        return res.status(400).send({ message: err.message });
+      }
+      return res.status(500).send({ message: 'Server Error' });
+    });
+});
+
 app.listen(PORT, () => {
-  // Если всё работает, консоль покажет, какой порт приложение слушает
-  console.log(`App listening on port ${PORT}`);
+  // console.log(`App listening port ${PORT}`);
 });
