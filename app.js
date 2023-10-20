@@ -14,7 +14,7 @@ const app = express();
 app.use(express.json());
 app.use((req, res, next) => {
   req.user = {
-    _id: '6530502687139f338dd36dc3', // вставьте сюда _id созданного в предыдущем пункте пользователя
+    _id: '6531c3b35d030560fdce9fef', // вставьте сюда _id созданного в предыдущем пункте пользователя
   };
 
   next();
@@ -29,12 +29,15 @@ app.post('/users', (req, res) => {
   console.log(req.body);
 
   return UserModel.create(userData)
-    .then((data) => res.status(201).send(data))
+    .then((data) => res.status(201)
+      .send(data))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res.status(400).send({ message: err.message });
+        return res.status(400)
+          .send({ message: err.message });
       }
-      return res.status(500).send({ message: 'Server Error' });
+      return res.status(500)
+        .send({ message: 'Server Error' });
     });
 });
 
