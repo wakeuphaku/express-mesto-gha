@@ -93,7 +93,7 @@ module.exports.unlikeCard = (req, res) => {
   )
     .then((card) => {
       if (!card) {
-        res.status(ERROR_CODE)
+        res.status(NOT_FOUND)
           .send({ message: 'Карточка не найдена ' });
       } else {
         res.send({ data: card });
@@ -104,7 +104,7 @@ module.exports.unlikeCard = (req, res) => {
         res.status(ERROR_CODE)
           .send({ message: 'Некорректные данные' });
       } else if (err.name === 'CastError') {
-        res.status(DEFAULT_ERROR)
+        res.status(ERROR_CODE)
           .send({ message: 'Карточка не найдена ' });
       } else {
         res.status(NOT_FOUND)
