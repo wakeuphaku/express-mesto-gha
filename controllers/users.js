@@ -12,7 +12,7 @@ module.exports.getUsers = (req, res) => {
     })
     .catch(() => {
       res.status(DEFAULT_ERROR)
-        .send({ message: 'Что то не так!' });
+        .send({ message: 'Что то тут не так!' });
     });
 };
 
@@ -31,12 +31,12 @@ module.exports.createUsers = (req, res) => {
     .then((user) => res.status(CREATED)
       .send({ data: user }))
     .catch((err) => {
-      if (err.name === 'SomeErrorName') {
+      if (err.name === 'ValidationError') {
         res.status(ERROR_CODE)
           .send({ message: 'Некорректные данные' });
       } else {
         res.status(DEFAULT_ERROR)
-          .send({ message: 'Что то не так!' });
+          .send({ message: 'Что то тут не так!' });
       }
     });
 };
@@ -44,15 +44,20 @@ module.exports.createUsers = (req, res) => {
 module.exports.getUserId = (req, res) => {
   User.findById(req.params.userId)
     .then((user) => {
-      res.send({ data: user });
+      if (!user) {
+        res.status(NOT_FOUND)
+          .send({ message: 'Пользователь не найден' });
+      } else {
+        res.send({ data: user });
+      }
     })
     .catch((err) => {
-      if (err.name === 'SomeErrorName') {
+      if (err.name === 'CastError') {
         res.status(NOT_FOUND)
           .send({ message: 'Пользователь не найден' });
       } else {
         res.status(DEFAULT_ERROR)
-          .send({ message: 'Что то не так!' });
+          .send({ message: 'Что то тут не так!' });
       }
     });
 };
@@ -68,20 +73,24 @@ module.exports.patchUsers = (req, res) => {
       name,
       about,
     },
+    {
+      new: true,
+      runValidators: true,
+    },
   )
     .then((user) => {
       res.send({ data: user });
     })
     .catch((err) => {
-      if (err.name === 'SomeErrorName') {
+      if (err.name === 'ValidationError') {
         res.status(ERROR_CODE)
           .send({ message: 'Некорректные данные' });
-      } else if (err.name === 'SomeError') {
+      } else if (err.name === 'CastError') {
         res.status(NOT_FOUND)
           .send({ message: 'Пользователь не найден' });
       } else {
         res.status(DEFAULT_ERROR)
-          .send({ message: 'Что то не так!' });
+          .send({ message: 'Что то тут не так!' });
       }
     });
 };
@@ -95,15 +104,15 @@ module.exports.patchAvatar = (req, res) => {
   )
     .then((user) => res.send({ data: user }))
     .catch((err) => {
-      if (err.name === 'SomeErrorName') {
+      if (err.name === 'ValidationError') {
         res.status(ERROR_CODE)
           .send({ message: 'Некорректные данные' });
-      } else if (err.name === 'SomeError') {
+      } else if (err.name === 'CastError') {
         res.status(NOT_FOUND)
           .send({ message: 'Пользователь не найден' });
       } else {
         res.status(DEFAULT_ERROR)
-          .send({ message: 'Что то не так!' });
+          .send({ message: 'Что то тут не так!' });
       }
     });
 };

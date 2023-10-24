@@ -12,7 +12,7 @@ module.exports.getCards = (req, res) => {
     })
     .catch(() => {
       res.status(DEFAULT_ERROR)
-        .send({ message: 'Что то не так!' });
+        .send({ message: 'Что то тут не так!' });
     });
 };
 
@@ -31,12 +31,12 @@ module.exports.createCards = (req, res) => {
     .then((card) => res.status(CREATED)
       .send({ data: card }))
     .catch((err) => {
-      if (err.name === 'SomeErrorName') {
+      if (err.name === 'ValidationError') {
         res.status(ERROR_CODE)
           .send({ message: 'Некорректные данные' });
       } else {
         res.status(DEFAULT_ERROR)
-          .send({ message: 'Что то не так!' });
+          .send({ message: 'Что то тут не так!' });
       }
     });
 };
@@ -59,18 +59,23 @@ module.exports.likeCard = (req, res) => {
     { new: true },
   )
     .then((card) => {
-      res.send({ data: card });
-    })
-    .catch((err) => {
-      if (err.name === 'SomeErrorName') {
-        res.status(ERROR_CODE)
-          .send({ message: 'Некорректные данные' });
-      } else if (err.name === 'SomeError') {
+      if (!card) {
         res.status(NOT_FOUND)
           .send({ message: 'Карточка не найдена ' });
       } else {
+        res.send({ data: card });
+      }
+    })
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(NOT_FOUND)
+          .send({ message: 'Некорректные данные' });
+      } else if (err.name === 'CastError') {
+        res.status(ERROR_CODE)
+          .send({ message: 'Карточка не найдена ' });
+      } else {
         res.status(DEFAULT_ERROR)
-          .send({ message: 'Что то не так!' });
+          .send({ message: 'Что то тут не так!' });
       }
     });
 };
@@ -89,15 +94,15 @@ module.exports.unlikeCard = (req, res) => {
       res.send({ data: card });
     })
     .catch((err) => {
-      if (err.name === 'SomeErrorName') {
+      if (err.name === 'ValidationError') {
         res.status(ERROR_CODE)
           .send({ message: 'Некорректные данные' });
-      } else if (err.name === 'SomeError') {
+      } else if (err.name === 'CastError') {
         res.status(NOT_FOUND)
           .send({ message: 'Карточка не найдена ' });
       } else {
         res.status(DEFAULT_ERROR)
-          .send({ message: 'Что то не так!' });
+          .send({ message: 'Что то тут не так!' });
       }
     });
 };
