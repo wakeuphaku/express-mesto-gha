@@ -53,7 +53,7 @@ module.exports.getUserId = (req, res) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(NOT_FOUND)
+        res.status(ERROR_CODE)
           .send({ message: 'Пользователь не найден' });
       } else {
         res.status(DEFAULT_ERROR)
@@ -100,7 +100,13 @@ module.exports.patchAvatar = (req, res) => {
 
   User.findByIdAndUpdate(
     req.user._id,
-    { avatar },
+    {
+      avatar,
+    },
+    {
+      new: true,
+      runValidators: true,
+    },
   )
     .then((user) => res.send({ data: user }))
     .catch((err) => {
