@@ -9,15 +9,6 @@
     "start": "node app.js",
     "dev": "nodemon app.js"
   },
-  "space-unary-ops": [
-    2, {
-      "words": true,
-      "nonwords": false,
-      "overrides": {
-        "new": false,
-        "++": true
-      }
-    }],
   "keywords": [],
   "author": "Dmitry Uchkin",
   "license": "ISC",
