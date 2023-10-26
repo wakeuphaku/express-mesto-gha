@@ -54,7 +54,7 @@ module.exports.deleteCard = (req, res) => {
     .catch((err) => {
       if (err.name === 'CastError') {
         res.status(ERROR_CODE)
-          .send({message: 'Карточка не найдена '});
+          .send({ message: 'Карточка не найдена ' });
       }
     });
 };
