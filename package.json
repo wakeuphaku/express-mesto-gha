@@ -5,10 +5,19 @@
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "npx eslint .",
+    "lint": "npx eslint . --fix",
     "start": "node app.js",
     "dev": "nodemon app.js"
   },
+  "space-unary-ops": [
+    2, {
+      "words": true,
+      "nonwords": false,
+      "overrides": {
+        "new": false,
+        "++": true
+      }
+    }],
   "keywords": [],
   "author": "Dmitry Uchkin",
   "license": "ISC",
