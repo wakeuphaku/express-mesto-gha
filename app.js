@@ -27,7 +27,7 @@ app.use('/users', require('./routes/users'));
 app.use('/cards', require('./routes/cards'));
 
 app.use((req, res, next) => {
-  next(res.status(NOT_FOUND).send({ message: 'Что то не так!' }));
+  res.status(NOT_FOUND).send({ message: 'Что то не так!' });
 });
 
 app.listen(PORT);
