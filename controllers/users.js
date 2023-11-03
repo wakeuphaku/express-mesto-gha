@@ -1,3 +1,5 @@
+// const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 
 const ERROR_CODE = 400;
@@ -21,12 +23,16 @@ module.exports.createUsers = (req, res) => {
     name,
     about,
     avatar,
+    email,
+    password,
   } = req.body;
 
   User.create({
     name,
     about,
     avatar,
+    email,
+    password,
   })
     .then((user) => res.status(CREATED)
       .send({ data: user }))
@@ -120,5 +126,17 @@ module.exports.patchAvatar = (req, res) => {
         res.status(DEFAULT_ERROR)
           .send({ message: 'Что то тут не так!' });
       }
+    });
+};
+
+module.exports.login = (req, res, next) => {
+  const { email, password } = req.body;
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign({ _id: user._id }, 'key', { expiresIn: '7d' });
+      return res.send({ token });
+    })
+    .catch((err) => {
+      next(err);
     });
 };
