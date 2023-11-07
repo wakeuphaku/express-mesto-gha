@@ -136,6 +136,7 @@ module.exports.getCurrentUser = (req, res, next) => {
       }
       return res.send({ user });
     })
+    // eslint-disable-next-line consistent-return
     .catch((err) => {
       if (err.name === 'CastError') {
         res.status(ERROR_CODE)
