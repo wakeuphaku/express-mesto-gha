@@ -8,7 +8,7 @@ const validationUrl = (url) => {
   if (validate) {
     return url;
   }
-  throw new BadRequest('Некорректный адрес URL');
+  throw new BadRequest('Некорректный URL');
 };
 
 module.exports.validationCreateUser = celebrate({

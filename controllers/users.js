@@ -1,6 +1,8 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const User = require('../models/user');
+const BadInfoError = require('../errors/BadInfoError');
+const NotFoundError = require('../errors/NotFoundError');
 
 const ERROR_CODE = 400;
 const NOT_FOUND = 404;
@@ -94,7 +96,7 @@ module.exports.patchUsers = (req, res) => {
     });
 };
 
-module.exports.patchAvatar = (req, res) => {
+module.exports.patchAvatar = (req, res, next) => {
   const { avatar } = req.body;
 
   User.findByIdAndUpdate(
@@ -107,18 +109,17 @@ module.exports.patchAvatar = (req, res) => {
       runValidators: true,
     },
   )
-    .then((user) => res.send({ data: user }))
+    .then((user) => {
+      if (!user) {
+        next(new NotFoundError('Пользователь не найен'));
+      }
+      res.send({ user });
+    })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(ERROR_CODE)
-          .send({ message: 'Некорректные данные' });
-      } else if (err.name === 'CastError') {
-        res.status(NOT_FOUND)
-          .send({ message: 'Пользователь не найден' });
-      } else {
-        res.status(DEFAULT_ERROR)
-          .send({ message: 'Что то тут не так!' });
+        return next(new BadInfoError('Переданы некорректные данные'));
       }
+      return next(err);
     });
 };
 
