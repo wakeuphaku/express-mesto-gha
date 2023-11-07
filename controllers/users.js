@@ -9,7 +9,7 @@ const CREATED = 201;
 
 module.exports.getUsers = (req, res, next) => {
   User.find({})
-    .then((users) => res.send(users))
+    .then((users) => res.status(200).send(users))
     .catch(next);
 };
 
