@@ -3,11 +3,15 @@ const bcrypt = require('bcryptjs');
 const User = require('../models/user');
 const BadInfoError = require('../errors/BadInfoError');
 const NotFoundError = require('../errors/NotFoundError');
+const BadRequest = require('../errors/BadRequest');
+const AuthError = require('../errors/AuthError');
 
 const ERROR_CODE = 400;
 const NOT_FOUND = 404;
 const DEFAULT_ERROR = 500;
 const CREATED = 201;
+
+const JWT = 'super-strong-secret';
 
 module.exports.getUsers = (req, res, next) => {
   User.find({})
@@ -135,23 +139,31 @@ module.exports.getCurrentUser = (req, res, next) => {
     // eslint-disable-next-line consistent-return
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(ERROR_CODE)
-          .send({ message: 'Пользователь не найден' });
-      } else {
-        return next(err);
+        return next(new BadRequest('Переданы некорректные данные'));
       }
+      return next(err);
     });
 };
 
 module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
-  return User.findUserByCredentials(email, password)
+
+  if (!email || !password) {
+    throw new BadRequest('Не передан email или пароль');
+  }
+  return User.findOne({ email }).select('+password')
     .then((user) => {
-      res.send({
-        token: jwt.sign({ _id: user._id }, 'super-strong-secret', {
-          expiresIn: '7d',
-        }),
-      });
+      if (!user) {
+        throw new AuthError('Такого пользователя не существует');
+      }
+      return bcrypt.compare(password, user.password)
+        .then((correctPassword) => {
+          if (!correctPassword) {
+            throw new AuthError('Неверный email или пароль');
+          }
+          const token = jwt.sign({ _id: user._id }, JWT, { expiresIn: '7d' });
+          return res.send({ token });
+        });
     })
     .catch((err) => {
       next(err);
