@@ -134,14 +134,15 @@ module.exports.getCurrentUser = (req, res, next) => {
         res.status(NOT_FOUND)
           .send({ message: 'Пользователь не найден' });
       }
-      return res.send({ data: user });
+      return res.send({ user });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
         res.status(ERROR_CODE)
           .send({ message: 'Пользователь не найден' });
+      } else {
+        return next(err);
       }
-      return next(err);
     });
 };
 
