@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
-const validator = require('validator');
-// eslint-disable-next-line import/no-extraneous-dependencies
+const isEmail = require('validator/lib/isEmail');
 const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema({
@@ -27,18 +26,21 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     validate: {
-      validator: (item) => validator.isEmail(item),
+      validator: (v) => isEmail(v),
+      message: 'Неправильный формат почты',
     },
   },
   password: {
     type: String,
     required: true,
+    minlength: 8,
+    select: false,
   },
 });
 
-userSchema.statics.findUserByCredentials = function (email, password) {
+userSchema.statics.findUserByCredentials = function findUserByCredentials(email, password) {
   return this.findOne({ email })
-    .select(+password)
+    .select('+password')
     .then((user) => {
       if (!user) {
         return Promise.reject(new Error('Неправильные почта или пароль'));
@@ -53,6 +55,5 @@ userSchema.statics.findUserByCredentials = function (email, password) {
           return user;
         });
     });
-};
-
+}
 module.exports = mongoose.model('user', userSchema);
