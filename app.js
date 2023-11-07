@@ -10,6 +10,11 @@ const { createUsers, login } = require('./controllers/users');
 
 const auth = require('./middlewares/auth');
 
+const {
+  validationCreateUser,
+  validationLogin,
+} = require('./middlewares/validations');
+
 mongoose.connect('mongodb://localhost:27017/mestodb', {
   useNewUrlParser: true,
 });
@@ -18,8 +23,8 @@ const app = express();
 
 app.use(express.json());
 
-app.post('/signin', login);
-app.post('/signup', createUsers);
+app.post('/signin', validationLogin, login);
+app.post('/signup', validationCreateUser, createUsers);
 
 app.use(auth);
 

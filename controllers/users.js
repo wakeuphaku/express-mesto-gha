@@ -7,15 +7,10 @@ const NOT_FOUND = 404;
 const DEFAULT_ERROR = 500;
 const CREATED = 201;
 
-module.exports.getUsers = (req, res) => {
+module.exports.getUsers = (req, res, next) => {
   User.find({})
-    .then((users) => {
-      res.send({ data: users });
-    })
-    .catch(() => {
-      res.status(DEFAULT_ERROR)
-        .send({ message: 'Что то тут не так!' });
-    });
+    .then((users) => res.send(users))
+    .catch(next);
 };
 
 module.exports.createUsers = (req, res) => {
