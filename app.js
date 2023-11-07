@@ -8,6 +8,8 @@ const NOT_FOUND = 404;
 
 const { createUsers, login } = require('./controllers/users');
 
+const auth = require('./middlewares/auth');
+
 mongoose.connect('mongodb://localhost:27017/mestodb', {
   useNewUrlParser: true,
 });
@@ -18,6 +20,8 @@ app.use(express.json());
 
 app.post('/signin', login);
 app.post('/signup', createUsers);
+
+app.use(auth);
 
 app.use('/users', require('./routes/users'));
 
