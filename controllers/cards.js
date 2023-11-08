@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Card = require('../models/card');
 const BadRequest = require('../errors/BadRequest');
 const AccesError = require('../errors/AccesError');
+const NotFoundError = require('../errors/NotFoundError');
 
 const ERROR_CODE = 400;
 const NOT_FOUND = 404;
@@ -20,7 +21,6 @@ module.exports.getCards = (req, res) => {
 };
 
 module.exports.createCards = (req, res, next) => {
-  const owner = req.user._id;
   const {
     name,
     link,
@@ -29,7 +29,7 @@ module.exports.createCards = (req, res, next) => {
   Card.create({
     name,
     link,
-    owner,
+    owner: req.user._id,
   })
     .then((card) => res.status(CREATED)
       .send({ card }))
@@ -45,23 +45,18 @@ module.exports.deleteCard = async (req, res, next) => {
   try {
     const card = await Card.findByIdAndRemove(req.params.cardId);
     if (!card) {
-      res.status(NOT_FOUND)
-        .send({ message: 'Карточка не найдена ' });
-    } else {
-      res.send({ data: card });
+      next(new NotFoundError('Карточка не найдена '));
+      return;
     }
     if (card.owner.toString() !== req.user._id.toString()) {
-      next(new AccesError('Ошибка прав доступа'));
+      throw new AccesError('Нет прав');
     }
-    res.status(CREATED).send(card);
+    res.status(200).send(card);
   } catch (err) {
-    if (err.name === 'CastError') {
-      res.status(ERROR_CODE)
-        .send({ message: 'Карточка не найдена ' });
-    } else {
-      res.status(DEFAULT_ERROR)
-        .send({ message: 'Что то тут не так!' });
+    if (err instanceof mongoose.Error.CastError) {
+      next(new BadRequest('Некорректные данные'));
     }
+    next(err);
   }
 };
 
