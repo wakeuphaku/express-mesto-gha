@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Card = require('../models/card');
 const BadRequest = require('../errors/BadRequest');
+const AccesError = require('../errors/AccesError');
 
 const ERROR_CODE = 400;
 const NOT_FOUND = 404;
@@ -48,6 +49,9 @@ module.exports.deleteCard = (req, res) => {
           .send({ message: 'Карточка не найдена ' });
       } else {
         res.send({ data: card });
+      }
+      if (card.owner.toString() !== req.user._id.toString()) {
+        throw new AccesError('Нету прав');
       }
     })
     .catch((err) => {
