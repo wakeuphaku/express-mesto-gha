@@ -1,10 +1,12 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const mongoose = require('mongoose');
 const User = require('../models/user');
 const BadInfoError = require('../errors/BadInfoError');
 const NotFoundError = require('../errors/NotFoundError');
 const BadRequest = require('../errors/BadRequest');
 const AuthError = require('../errors/AuthError');
+const EmailError = require('../errors/EmailError');
 
 const ERROR_CODE = 400;
 const NOT_FOUND = 404;
@@ -19,7 +21,7 @@ module.exports.getUsers = (req, res, next) => {
     .catch(next);
 };
 
-module.exports.createUsers = (req, res) => {
+module.exports.createUsers = (req, res, next) => {
   const {
     name,
     about,
@@ -36,12 +38,12 @@ module.exports.createUsers = (req, res) => {
       name, about, avatar, email,
     }))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(ERROR_CODE)
-          .send({ message: 'Некорректные данные' });
+      if (err.code === 11000) {
+        next(new EmailError('Пользаватель уже зарегистрирован'));
+      } else if (err instanceof mongoose.Error.ValidationError) {
+        next(new BadRequest(err.message));
       } else {
-        res.status(DEFAULT_ERROR)
-          .send({ message: 'Что то тут не так!' });
+        next(err);
       }
     });
 };
