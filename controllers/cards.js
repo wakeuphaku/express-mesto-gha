@@ -1,4 +1,6 @@
+const mongoose = require('mongoose');
 const Card = require('../models/card');
+const BadRequest = require('../errors/BadRequest');
 
 const ERROR_CODE = 400;
 const NOT_FOUND = 404;
@@ -16,7 +18,7 @@ module.exports.getCards = (req, res) => {
     });
 };
 
-module.exports.createCards = (req, res) => {
+module.exports.createCards = (req, res, next) => {
   const owner = req.user._id;
   const {
     name,
@@ -29,15 +31,12 @@ module.exports.createCards = (req, res) => {
     owner,
   })
     .then((card) => res.status(CREATED)
-      .send({ data: card }))
+      .send({ card }))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(ERROR_CODE)
-          .send({ message: 'Некорректные данные' });
-      } else {
-        res.status(DEFAULT_ERROR)
-          .send({ message: 'Что то тут не так!' });
+      if (err instanceof mongoose.Error.ValidationError) {
+        next(new BadRequest('Некорректные данные'));
       }
+      return next(err);
     });
 };
 

@@ -3,7 +3,17 @@ const {
   celebrate,
   Joi,
 } = require('celebrate');
+
 const isUrl = require('validator/lib/isURL');
+const BadRequest = require('../errors/BadRequest');
+
+const validationUrl = (url) => {
+  const validate = isUrl(url);
+  if (validate) {
+    return url;
+  }
+  throw new BadRequest('Некорректный URL');
+};
 
 const {
   getCards,
@@ -17,7 +27,7 @@ router.get('/', getCards);
 router.post('/', celebrate({
   body: Joi.object().keys({
     name: Joi.string().required().min(2).max(30),
-    link: Joi.string().required().custom(isUrl),
+    link: Joi.string().required().custom(validationUrl),
   }),
 }), createCards);
 router.delete('/:cardId', celebrate({
