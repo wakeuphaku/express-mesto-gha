@@ -41,28 +41,28 @@ module.exports.createCards = (req, res, next) => {
     });
 };
 
-module.exports.deleteCard = (req, res) => {
-  Card.findByIdAndRemove(req.params.cardId)
-    .then((card) => {
-      if (!card) {
-        res.status(NOT_FOUND)
-          .send({ message: 'Карточка не найдена ' });
-      } else {
-        res.send({ data: card });
-      }
-      if (card.owner.toString() !== req.user._id.toString()) {
-        throw new AccesError('Нету прав');
-      }
-    })
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        res.status(ERROR_CODE)
-          .send({ message: 'Карточка не найдена ' });
-      } else {
-        res.status(DEFAULT_ERROR)
-          .send({ message: 'Что то тут не так!' });
-      }
-    });
+module.exports.deleteCard = async (req, res, next) => {
+  try {
+    const card = await Card.findByIdAndRemove(req.params.cardId);
+    if (!card) {
+      res.status(NOT_FOUND)
+        .send({ message: 'Карточка не найдена ' });
+    } else {
+      res.send({ data: card });
+    }
+    if (card.owner.toString() !== req.user._id.toString()) {
+      next(new AccesError('Ошибка прав доступа'));
+    }
+    res.status(CREATED).send(card);
+  } catch (err) {
+    if (err.name === 'CastError') {
+      res.status(ERROR_CODE)
+        .send({ message: 'Карточка не найдена ' });
+    } else {
+      res.status(DEFAULT_ERROR)
+        .send({ message: 'Что то тут не так!' });
+    }
+  }
 };
 
 module.exports.likeCard = (req, res) => {
