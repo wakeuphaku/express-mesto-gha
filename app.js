@@ -11,7 +11,7 @@ const { PORT = 3000 } = process.env;
 
 const mongoose = require('mongoose');
 
-const NOT_FOUND = 404;
+const NotFoundError = require('./errors/NotFoundError');
 
 const {
   createUsers,
@@ -30,6 +30,10 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 const app = express();
 
 app.use(express.json());
+
+app.use((req, res, next) => {
+  next(new NotFoundError('Что то тут не так!'));
+});
 
 app.post(
   '/signin',
@@ -53,8 +57,7 @@ app.post('/signup', celebrate({
       avatar: Joi.string().pattern(regex),
       email: Joi.string().required().email(),
       password: Joi.string().required().min(2),
-    })
-    .unknown(true),
+    }),
 }), createUsers);
 
 app.use(auth);
@@ -77,11 +80,6 @@ app.use((err, req, res, next) => {
         : message,
     });
   next();
-});
-
-app.use((req, res) => {
-  res.status(NOT_FOUND)
-    .send({ message: 'Что то не так!' });
 });
 
 app.listen(PORT);

@@ -8,9 +8,6 @@ const BadRequest = require('../errors/BadRequest');
 const AuthError = require('../errors/AuthError');
 const EmailError = require('../errors/EmailError');
 
-const ERROR_CODE = 400;
-const NOT_FOUND = 404;
-const DEFAULT_ERROR = 500;
 const CREATED = 201;
 
 const JWT = 'super-strong-secret';
@@ -48,28 +45,25 @@ module.exports.createUsers = (req, res, next) => {
     });
 };
 
-module.exports.getUserId = (req, res) => {
+module.exports.getUserId = (req, res, next) => {
   User.findById(req.params.userId)
     .then((user) => {
       if (!user) {
-        res.status(NOT_FOUND)
-          .send({ message: 'Пользователь не найден' });
+        next(new NotFoundError('Некорректные данные'));
       } else {
         res.send({ data: user });
       }
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(ERROR_CODE)
-          .send({ message: 'Пользователь не найден' });
+        next(new BadRequest('Некорректные данные'));
       } else {
-        res.status(DEFAULT_ERROR)
-          .send({ message: 'Что то тут не так!' });
+        next(new BadInfoError('Некорректные данные'));
       }
     });
 };
 
-module.exports.patchUsers = (req, res) => {
+module.exports.patchUsers = (req, res, next) => {
   const {
     name,
     about,
@@ -90,14 +84,11 @@ module.exports.patchUsers = (req, res) => {
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(ERROR_CODE)
-          .send({ message: 'Некорректные данные' });
+        next(new BadRequest('Некорректные данные'));
       } else if (err.name === 'CastError') {
-        res.status(NOT_FOUND)
-          .send({ message: 'Пользователь не найден' });
+        next(new BadRequest('Некорректные данные'));
       } else {
-        res.status(DEFAULT_ERROR)
-          .send({ message: 'Что то тут не так!' });
+        next(new BadInfoError('Некорректные данные'));
       }
     });
 };
@@ -133,8 +124,7 @@ module.exports.getCurrentUser = (req, res, next) => {
   User.findById(req.user._id)
     .then((user) => {
       if (!user) {
-        res.status(NOT_FOUND)
-          .send({ message: 'Пользователь не найден' });
+        return next(new NotFoundError('Пользователь не найден'));
       }
       return res.send({ user });
     })

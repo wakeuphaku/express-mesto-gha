@@ -3,10 +3,8 @@ const Card = require('../models/card');
 const BadRequest = require('../errors/BadRequest');
 const AccesError = require('../errors/AccesError');
 const NotFoundError = require('../errors/NotFoundError');
+const BadInfoError = require('../errors/BadInfoError');
 
-const ERROR_CODE = 400;
-const NOT_FOUND = 404;
-const DEFAULT_ERROR = 500;
 const CREATED = 201;
 
 module.exports.getCards = (req, res) => {
@@ -14,9 +12,8 @@ module.exports.getCards = (req, res) => {
     .then((users) => {
       res.send({ data: users });
     })
-    .catch(() => {
-      res.status(DEFAULT_ERROR)
-        .send({ message: 'Что то тут не так!' });
+    .catch((next) => {
+      next(new BadInfoError('Некорректные данные'));
     });
 };
 
@@ -46,12 +43,13 @@ module.exports.deleteCard = async (req, res, next) => {
     const card = await Card.findByIdAndRemove(req.params.cardId);
     if (!card) {
       next(new NotFoundError('Карточка не найдена '));
-      return;
     }
     if (card.owner.toString() !== req.user._id.toString()) {
       throw new AccesError('Нет прав');
     }
-    res.status(200).send(card);
+    card.deleteOne()
+      .then(() => res.status(200).send(card))
+      .catch(next);
   } catch (err) {
     if (err instanceof mongoose.Error.CastError) {
       next(new BadRequest('Некорректные данные'));
@@ -60,7 +58,7 @@ module.exports.deleteCard = async (req, res, next) => {
   }
 };
 
-module.exports.likeCard = (req, res) => {
+module.exports.likeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
@@ -68,27 +66,23 @@ module.exports.likeCard = (req, res) => {
   )
     .then((card) => {
       if (!card) {
-        res.status(NOT_FOUND)
-          .send({ message: 'Карточка не найдена ' });
+        next(new NotFoundError('Некорректные данные'));
       } else {
         res.send({ data: card });
       }
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(NOT_FOUND)
-          .send({ message: 'Некорректные данные' });
+        next(new BadRequest('Некорректные данные'));
       } else if (err.name === 'CastError') {
-        res.status(ERROR_CODE)
-          .send({ message: 'Карточка не найдена ' });
+        next(new NotFoundError('Некорректные данные'));
       } else {
-        res.status(DEFAULT_ERROR)
-          .send({ message: 'Что то тут не так!' });
+        next(new BadInfoError('Что то тут не так'));
       }
     });
 };
 
-module.exports.unlikeCard = (req, res) => {
+module.exports.unlikeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $pull: { likes: req.user._id } }, // убрать _id из массива
@@ -96,22 +90,18 @@ module.exports.unlikeCard = (req, res) => {
   )
     .then((card) => {
       if (!card) {
-        res.status(NOT_FOUND)
-          .send({ message: 'Карточка не найдена ' });
+        next(new NotFoundError('Некорректные данные'));
       } else {
         res.send({ data: card });
       }
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(ERROR_CODE)
-          .send({ message: 'Некорректные данные' });
+        next(new BadRequest('Некорректные данные'));
       } else if (err.name === 'CastError') {
-        res.status(ERROR_CODE)
-          .send({ message: 'Карточка не найдена ' });
+        next(new NotFoundError('Некорректные данные'));
       } else {
-        res.status(NOT_FOUND)
-          .send({ message: 'Что то тут не так!' });
+        next(new BadInfoError('Что то тут не так'));
       }
     });
 };

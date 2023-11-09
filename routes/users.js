@@ -16,7 +16,6 @@ const validationUrl = (url) => {
 };
 const {
   getUsers,
-  createUsers,
   getUserId,
   patchUsers,
   patchAvatar,
@@ -24,15 +23,6 @@ const {
 } = require('../controllers/users');
 
 router.get('/', getUsers);
-router.post('/', celebrate({
-  body: Joi.object().keys({
-    name: Joi.string().min(2).max(30),
-    about: Joi.string().min(2).max(30),
-    avatar: Joi.string().custom(validationUrl),
-    email: Joi.string().required().email(),
-    password: Joi.string().required().min(8),
-  }),
-}), createUsers);
 router.get('/me', getCurrentUser);
 router.get('/:userId', celebrate({
   params: Joi.object().keys({
