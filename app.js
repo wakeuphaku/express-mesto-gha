@@ -31,9 +31,6 @@ const app = express();
 
 app.use(express.json());
 
-app.use((req, res, next) => {
-  next(new NotFoundError('Что то тут не так!'));
-});
 
 app.post(
   '/signin',
@@ -65,6 +62,10 @@ app.use(auth);
 app.use('/users', require('./routes/users'));
 
 app.use('/cards', require('./routes/cards'));
+
+app.use((req, res, next) => {
+  next(new NotFoundError('Что то не так'));
+});
 
 app.use(errors());
 

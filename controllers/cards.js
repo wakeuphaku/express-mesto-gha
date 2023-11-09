@@ -77,7 +77,7 @@ module.exports.likeCard = (req, res, next) => {
       } else if (err.name === 'CastError') {
         next(new NotFoundError('Некорректные данные'));
       } else {
-        next(new BadInfoError('Что то тут не так'));
+        next(new BadInfoError('Что то не так'));
       }
     });
 };
@@ -101,7 +101,7 @@ module.exports.unlikeCard = (req, res, next) => {
       } else if (err.name === 'CastError') {
         next(new NotFoundError('Некорректные данные'));
       } else {
-        next(new BadInfoError('Что то тут не так'));
+        next(new BadInfoError('Что то не так'));
       }
     });
 };
