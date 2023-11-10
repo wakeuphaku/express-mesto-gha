@@ -32,15 +32,16 @@ module.exports.createCards = (req, res, next) => {
       .send({ card }))
     .catch((err) => {
       if (err instanceof mongoose.Error.ValidationError) {
-        next(new BadRequest('Некорректные данные'));
+        return next(new BadRequest('Некорректные данные'));
       }
       return next(err);
     });
 };
 
+// eslint-disable-next-line consistent-return
 module.exports.deleteCard = async (req, res, next) => {
   try {
-    const card = await Card.findByIdAndRemove(req.params.cardId);
+    const card = await Card.findById(req.params.cardId);
     if (!card) {
       next(new NotFoundError('Карточка не найдена '));
     }
@@ -52,7 +53,7 @@ module.exports.deleteCard = async (req, res, next) => {
       .catch(next);
   } catch (err) {
     if (err instanceof mongoose.Error.CastError) {
-      next(new BadRequest('Некорректные данные'));
+      return next(new BadRequest('Некорректные данные'));
     }
     next(err);
   }
@@ -75,7 +76,7 @@ module.exports.likeCard = (req, res, next) => {
       if (err.name === 'ValidationError') {
         next(new BadRequest('Некорректные данные'));
       } else if (err.name === 'CastError') {
-        next(new NotFoundError('Некорректные данные'));
+        next(new BadRequest('Некорректные данные'));
       } else {
         next(new BadInfoError('Что то не так'));
       }
@@ -99,7 +100,7 @@ module.exports.unlikeCard = (req, res, next) => {
       if (err.name === 'ValidationError') {
         next(new BadRequest('Некорректные данные'));
       } else if (err.name === 'CastError') {
-        next(new NotFoundError('Некорректные данные'));
+        next(new BadRequest('Некорректные данные'));
       } else {
         next(new BadInfoError('Что то не так'));
       }

@@ -106,9 +106,10 @@ module.exports.patchAvatar = (req, res, next) => {
       runValidators: true,
     },
   )
+    // eslint-disable-next-line consistent-return
     .then((user) => {
       if (!user) {
-        next(new NotFoundError('Пользователь не найен'));
+        return next(new NotFoundError('Пользователь не найен'));
       }
       res.send({ user });
     })
